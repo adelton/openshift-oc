@@ -1,3 +1,5 @@
+%global source_date_epoch_from_changelog 0
+
 #debuginfo not supported with Go
 %global debug_package %{nil}
 # modifying the Go binaries breaks the DWARF debugging
@@ -46,9 +48,7 @@ ExclusiveArch:  x86_64 aarch64 ppc64le s390x
 %endif
 
 BuildRequires:  golang >= %{golang_version}
-BuildRequires:  goversioninfo
 BuildRequires:  krb5-devel
-BuildRequires:  rsync
 
 Provides:       atomic-openshift-clients = %{version}
 Obsoletes:      atomic-openshift-clients <= %{version}
@@ -97,11 +97,6 @@ GOARCH=s390x
 %endif
 %{make} build GO_BUILD_PACKAGES:='./cmd/oc ./tools/genman'
 
-%ifarch x86_64
-  # Create Binaries for all supported arches
-  %{make} cross-build-darwin-amd64 cross-build-windows-amd64 GO_BUILD_PACKAGES:='./cmd/oc'
-%endif
-
 %install
 install -d %{buildroot}%{_bindir}
 
@@ -109,20 +104,6 @@ install -d %{buildroot}%{_bindir}
 install -p -m 755 ./oc %{buildroot}%{_bindir}/oc
 ln -s ./oc %{buildroot}%{_bindir}/kubectl
 [[ -e %{buildroot}%{_bindir}/kubectl ]]
-
-%ifarch x86_64
-# Install client executable for windows and mac
-install -d %{buildroot}%{_datadir}/%{name}/{linux,macosx,windows}
-install -p -m 755 ./oc %{buildroot}%{_datadir}/%{name}/linux/oc
-ln -s ./oc %{buildroot}%{_datadir}/%{name}/linux/kubectl
-[[ -e %{buildroot}%{_datadir}/%{name}/linux/kubectl ]]
-install -p -m 755 ./_output/bin/darwin_amd64/oc %{buildroot}/%{_datadir}/%{name}/macosx/oc
-ln -s ./oc %{buildroot}/%{_datadir}/%{name}/macosx/kubectl
-[[ -e %{buildroot}/%{_datadir}/%{name}/macosx/kubectl ]]
-install -p -m 755 ./_output/bin/windows_amd64/oc.exe %{buildroot}/%{_datadir}/%{name}/windows/oc.exe
-ln -s ./oc.exe %{buildroot}/%{_datadir}/%{name}/windows/kubectl.exe
-[[ -e %{buildroot}/%{_datadir}/%{name}/windows/kubectl.exe ]]
-%endif
 
 # Install man1 man pages
 install -d -m 0755 %{buildroot}%{_mandir}/man1
@@ -145,19 +126,5 @@ done
 %{_sysconfdir}/bash_completion.d/kubectl
 %dir %{_mandir}/man1/
 %{_mandir}/man1/oc*
-
-%ifarch x86_64
-%files redistributable
-%license LICENSE
-%dir %{_datadir}/%{name}/linux/
-%dir %{_datadir}/%{name}/macosx/
-%dir %{_datadir}/%{name}/windows/
-%{_datadir}/%{name}/linux/oc
-%{_datadir}/%{name}/linux/kubectl
-%{_datadir}/%{name}/macosx/oc
-%{_datadir}/%{name}/macosx/kubectl
-%{_datadir}/%{name}/windows/oc.exe
-%{_datadir}/%{name}/windows/kubectl.exe
-%endif
 
 %changelog
