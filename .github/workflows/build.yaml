@@ -8,13 +8,12 @@ on:
 
 jobs:
   build:
-    name: make oc
+    name: make rpm-build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - name: Build source container image
         run: docker build -t localhost/oc-builder -f .github/Dockerfile .
       - name: Build oc
-        run: docker run --rm --network=none --name oc-builder localhost/oc-builder make oc
-      - run: ls -la
+        run: docker run --rm --network=none --name oc-builder localhost/oc-builder make rpm-build
 
